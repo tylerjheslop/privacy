@@ -76,3 +76,47 @@ def squared_loss(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     the squared loss of each sample.
   """
   return (y_true - y_pred)**2
+
+
+def multilabel_bce_loss(labels: np.ndarray,
+                        pred: np.ndarray,
+                        from_logits=False,
+                        small_value=1e-8) -> np.ndarray:
+  """Computes the per-multi-label-example cross entropy loss.
+
+  Args:
+    labels: numpy array of shape (num_samples, num_classes). labels[i] is the
+      true multi-hot encoded label (vector) of the i-th sample and each element
+      of the vector is one of {0, 1}.
+    pred: numpy array of shape (num_samples, num_classes). For binary cross
+      entropy loss, the shape should be (num_samples, num_classes) and pred[i]
+      is the logits or probability vector of the i-th sample.
+    from_logits: whether `pred` is logits or probability vector.
+    small_value: a scalar. np.log can become -inf if the probability is too
+      close to 0, so the probability is clipped below by small_value.
+
+  Returns:
+    the cross-entropy loss of each sample for each class.
+  """
+  # Check arrays.
+  if labels.shape[0] != pred.shape[0]:
+    raise ValueError('labels and pred should have the same number of examples,',
+                     f'but got {labels.shape[0]} and {pred.shape[0]}.')
+  if not ((labels == 0) | (labels == 1)).all():
+    raise ValueError('labels should be in {0, 1}.')
+  # Check if labels are multi-hot.
+  if (labels > 1).any():
+    raise ValueError(('Labels are not multihot. For multi-label classification '
+                      'the labels should be multihot encoded.'))
+  # Check if labels vectors are multi-label.
+  summed_labels = np.sum(labels, axis=1)
+  if ((summed_labels == 0) | (summed_labels == 1)).all():
+    raise ValueError(('Labels are not multilabel. Every sample has at most one '
+                      'positive label.'))
+
+  # Multi-class multi-label binary cross entropy loss
+  if from_logits:
+    pred = special.expit(pred)
+  bce = labels * np.log(pred + small_value)
+  bce += (1 - labels) * np.log(1 - pred + small_value)
+  return -bce

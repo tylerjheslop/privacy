@@ -13,6 +13,7 @@ py_library(
         ":single_layer_softmax",
         "//tensorflow_privacy/privacy/analysis:compute_dp_sgd_privacy_lib",
         "//tensorflow_privacy/privacy/optimizers:dp_optimizer_keras",
+        "@differential-privacy//dp_accounting/python/accounting:common",
     ],
 )
 

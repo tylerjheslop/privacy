@@ -13,6 +13,11 @@
 # limitations under the License.
 """Train a CNN on MNIST with differentially private SGD optimizer."""
 
+## Added as possible fix
+from tensorflow.python.keras.metrics import Metric
+from tensorflow.python.keras.metrics import Accuracy
+## 
+
 import time
 
 from absl import app
